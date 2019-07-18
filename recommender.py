@@ -9,18 +9,21 @@ from nltk.corpus import stopwords
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import svds
 import matplotlib.pyplot as plt
 pd.options.display.max_columns = 30
 
 
 ################## 1.  import data to dataset#########################################
-articles_df = pd.read_csv('data/pubmed_articles.csv')
+articles_df = pd.read_csv('data/articlewID.csv', sep="\t")
 # print(articles_df.head(5))
-print(articles_df.shape)    # 3047 X 13
+# print(articles_df.shape)    # 3047 X 14
+print("articlewID.csv columns:", articles_df.columns)
 
 interactions_df = pd.read_csv('data/users_interactions.csv')
 # print(interactions_df.head(10))
+print("users_interactions.csv columns:", interactions_df.columns)
 
 
 ## assign weights to different user behavior
@@ -36,17 +39,16 @@ interactions_df['eventStrength'] = interactions_df['eventType'].apply(lambda x: 
 
 ### Some info from the interaction table
 users_interactions_count_df = interactions_df.groupby(['personId', 'contentId']).size().groupby('personId').size()
-# print('# users: %d' % len(users_interactions_count_df))
+print('# users: %d' % len(users_interactions_count_df))
 users_with_enough_interactions_df = users_interactions_count_df[users_interactions_count_df >= 5].reset_index()[['personId']]
-# print('# users with at least 5 interactions: %d' % len(users_with_enough_interactions_df))
+print('# users with at least 5 interactions: %d' % len(users_with_enough_interactions_df))
 # users: 1895
 # users with at least 5 interactions: 1140
 
 # print('# of interactions: %d' % len(interactions_df))
 interactions_from_selected_users_df = interactions_df.merge(users_with_enough_interactions_df, \
             how='right', left_on='personId', right_on='personId')
-# print('# of interactions from users with at least 5 interactions: %d' % len(interactions_from_selected_users_df))
-# of interactions: 72312
+print('# of interactions from users with at least 5 interactions: %d' % len(interactions_from_selected_users_df))
 # of interactions from users with at least 5 interactions: 69868
 
 ### calculate a user's interaction on a certain item as a value
@@ -57,7 +59,7 @@ interactions_full_df = interactions_from_selected_users_df \
     .groupby(['personId', 'contentId'])['eventStrength'].sum() \
     .apply(smooth_user_preference).reset_index()
 print('# of unique user/item interactions: %d' % len(interactions_full_df))
-## of unique user/item interactions: 39106
+# of unique user/item interactions: 39106
 # print(interactions_full_df.head(10))
 
 
@@ -219,31 +221,34 @@ class PopularityRecommender:
 
 popularity_model = PopularityRecommender(item_popularity_df, articles_df)
 
-# print('Evaluating Popularity recommendation model...')
+print('---------------------------------------------')
+print('Evaluating Popularity recommendation model...')
 pop_global_metrics, pop_detailed_results_df = model_evaluator.evaluate_model(popularity_model)
-# print('\nGlobal metrics:\n%s' % pop_global_metrics)
+print('\nGlobal metrics:\n%s' % pop_global_metrics)
 # print(pop_detailed_results_df.head(10))
-
-
-
-#### Content-Based Filtering model #############
+#
+#
+#
+######## Content-Based Filtering model #############
 #Ignoring stopwords (words with no semantics) from English and Portuguese (as we have a corpus with mixed languages)
-stopwords_list = stopwords.words('english') + stopwords.words('portuguese')
+
+
+stop_words = set(stopwords.words('english'))
 
 #Trains a model whose vectors size is 5000, composed by the main unigrams and bigrams found in the corpus, ignoring stopwords
 vectorizer = TfidfVectorizer(analyzer='word',\
                      ngram_range=(1, 2),\
                      min_df=0.003,\
                      max_df=0.5,\
-                     max_features=5000,\
-                     stop_words=stopwords_list)
+                     max_features=5000, \
+                     stop_words=stop_words)
 
 item_ids = articles_df['contentId'].tolist()
-tfidf_matrix = vectorizer.fit_transform(articles_df['title'] + "" + articles_df['text'])
+tfidf_matrix = vectorizer.fit_transform(articles_df['title'].apply(lambda x: np.str_(x)) + "" + articles_df['text'].apply(lambda x: np.str_(x)))
 tfidf_feature_names = vectorizer.get_feature_names()
 # print(tfidf_matrix)
 
-
+#
 ############## build user profile ############################
 def get_item_profile(item_id):
     idx = item_ids.index(item_id)
@@ -287,11 +292,12 @@ mydf = pd.DataFrame(sorted(zip(tfidf_feature_names,
              columns=['token', 'relevance'])
 print("------------------------------------")
 print("user -1479311724257856983 top interests")
+print("---------------------------------------------------------------")
 print(mydf)
-print("--------------------------------------")
+print("----------------------------------------------------------------")
 
 
-
+#
 ########### content based recommender ############
 class ContentBasedRecommender:
     MODEL_NAME = 'Content-Based'
@@ -332,39 +338,41 @@ class ContentBasedRecommender:
         return recommendations_df
 
 content_based_recommender_model = ContentBasedRecommender(articles_df)
-# print('Evaluating Content-Based Filtering model...')
+print('---------------------------------------------------------------')
+print('Evaluating Content-Based Filtering model...')
 cb_global_metrics, cb_detailed_results_df = model_evaluator.evaluate_model(content_based_recommender_model)
-# print('\nGlobal metrics:\n%s' % cb_global_metrics)
+print('\nGlobal metrics:\n%s' % cb_global_metrics)
 # print(cb_detailed_results_df.head(10))
 
-
-
+#
+#
 ############# Collaborative Filtering model  #######################
 #Creating a sparse pivot table with users in rows and items in columns
 users_items_pivot_matrix_df = interactions_train_df.pivot(index='personId',
                                                           columns='contentId',
                                                           values='eventStrength').fillna(0)
 
-print(users_items_pivot_matrix_df.head(10))
-users_items_pivot_matrix = users_items_pivot_matrix_df.as_matrix()
-print(users_items_pivot_matrix[:10])
+# print(users_items_pivot_matrix_df.head(10))
+users_items_pivot_matrix = users_items_pivot_matrix_df.values
+# users_items_pivot_matrix = csc_matrix(users_items_pivot_matrix)
+# print(users_items_pivot_matrix[:10])
 users_ids = list(users_items_pivot_matrix_df.index)
-print(users_ids[:10])
+# print(users_ids[:10])
 
 #The number of factors to factor the user-item matrix.
 NUMBER_OF_FACTORS_MF = 15
 #Performs matrix factorization of the original user item matrix
-U, sigma, Vt = svds(users_items_pivot_matrix, k = NUMBER_OF_FACTORS_MF)
-print(U.shape)
-print(Vt.shape)
+U, sigma, Vt = svds(users_items_pivot_matrix, k=NUMBER_OF_FACTORS_MF)
+# print(U.shape)
+# print(Vt.shape)
 sigma = np.diag(sigma)
-print(sigma.shape)
+# print(sigma.shape)
 all_user_predicted_ratings = np.dot(np.dot(U, sigma), Vt)
-print(all_user_predicted_ratings)
+# print(all_user_predicted_ratings)
 
 #Converting the reconstructed matrix back to a Pandas dataframe
 cf_preds_df = pd.DataFrame(all_user_predicted_ratings, columns = users_items_pivot_matrix_df.columns, index=users_ids).transpose()
-print(cf_preds_df.head(10))
+# print(cf_preds_df.head(10))
 len(cf_preds_df.columns)
 
 
@@ -403,12 +411,13 @@ class CFRecommender:
 
 
 cf_recommender_model = CFRecommender(cf_preds_df, articles_df)
+print('----------------------------------------------------------------------')
 print('Evaluating Collaborative Filtering (SVD Matrix Factorization) model...')
 cf_global_metrics, cf_detailed_results_df = model_evaluator.evaluate_model(cf_recommender_model)
 print('\nGlobal metrics:\n%s' % cf_global_metrics)
-cf_detailed_results_df.head(10)
-
-
+# cf_detailed_results_df.head(10)
+#
+#
 ########## Hybrid Recommender ################################################
 class HybridRecommender:
     MODEL_NAME = 'Hybrid'
@@ -455,18 +464,23 @@ class HybridRecommender:
 
 
 hybrid_recommender_model = HybridRecommender(content_based_recommender_model, cf_recommender_model, articles_df)
+print('------------------------------------------------------------------------------')
 print('Evaluating Hybrid model...')
 hybrid_global_metrics, hybrid_detailed_results_df = model_evaluator.evaluate_model(hybrid_recommender_model)
 print('\nGlobal metrics:\n%s' % hybrid_global_metrics)
-print(hybrid_detailed_results_df.head(10))
-
+# print(hybrid_detailed_results_df.head(10))
 
 
 
 ############ Comparing the methods ########################################
 global_metrics_df = pd.DataFrame([pop_global_metrics, cf_global_metrics, cb_global_metrics, hybrid_global_metrics]) \
                         .set_index('modelName')
+print('----------------------------------------------------------------')
+print('MODEL COMPARING RESULTS')
 print(global_metrics_df)
+print('-----------------Conclusion---------------------------------------')
+print('Content Based Model has the best performance for this dataset. ')
+print('------------------------------------------------------------------')
 
 ### plot the comparison results
 ax = global_metrics_df.transpose().plot(kind='bar', figsize=(15,8))
@@ -474,23 +488,24 @@ for p in ax.patches:
     ax.annotate("%.3f" % p.get_height(), (p.get_x() + p.get_width() / 2., p.get_height()), \
                 ha='center', va='center', xytext=(0, 10), textcoords='offset points')
 plt.show()
-
-
+# plt.savefig('output/ComparisonModels.png')
+#
 
 ############# Testing ################################################
-def inspect_interactions(person_id, test_set=True):
-    if test_set:
-        interactions_df = interactions_test_indexed_df
-    else:
-        interactions_df = interactions_train_indexed_df
-    return interactions_df.loc[person_id].merge(articles_df, how = 'left', \
-                                                      left_on = 'contentId', \
-                                                      right_on = 'contentId') \
-                          .sort_values('eventStrength', ascending = False)[['eventStrength',
-                                                                          'contentId',
-                                                                          'title', 'url', 'lang']]
+# def inspect_interactions(person_id, test_set=True):
+#     if test_set:
+#         interactions_df = interactions_test_indexed_df
+#     else:
+#         interactions_df = interactions_train_indexed_df
+#     return interactions_df.loc[person_id].merge(articles_df, how='left', \
+#                                                       left_on='contentId', \
+#                                                       right_on='contentId') \
+#                           .sort_values('eventStrength', ascending=False)[['eventStrength',\
+#                                                                           'contentId',\
+#                                                                           'title', 'url', 'lang']]
+#
+# print(inspect_interactions(-1479311724257856983, test_set=False).head(20))
+# print(content_based_recommender_model.recommend_items(-1479311724257856983, topn=20, verbose=True))
 
-print(inspect_interactions(-1479311724257856983, test_set=False).head(20))
-print(hybrid_recommender_model.recommend_items(-1479311724257856983, topn=20, verbose=True))
 
 
