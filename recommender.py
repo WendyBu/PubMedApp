@@ -487,25 +487,28 @@ ax = global_metrics_df.transpose().plot(kind='bar', figsize=(15,8))
 for p in ax.patches:
     ax.annotate("%.3f" % p.get_height(), (p.get_x() + p.get_width() / 2., p.get_height()), \
                 ha='center', va='center', xytext=(0, 10), textcoords='offset points')
-plt.show()
+# plt.show()
 # plt.savefig('output/ComparisonModels.png')
-#
 
-############# Testing ################################################
-# def inspect_interactions(person_id, test_set=True):
-#     if test_set:
-#         interactions_df = interactions_test_indexed_df
-#     else:
-#         interactions_df = interactions_train_indexed_df
-#     return interactions_df.loc[person_id].merge(articles_df, how='left', \
-#                                                       left_on='contentId', \
-#                                                       right_on='contentId') \
-#                           .sort_values('eventStrength', ascending=False)[['eventStrength',\
-#                                                                           'contentId',\
-#                                                                           'title', 'url', 'lang']]
-#
+
+############ Testing ################################################
+print('-----------------------TESTING for one user ----------------------------')
+def inspect_interactions(person_id, test_set=True):
+    if test_set:
+        interactions_df = interactions_test_indexed_df
+    else:
+        interactions_df = interactions_train_indexed_df
+    return interactions_df.loc[person_id].merge(articles_df, how='left', \
+                                                      left_on='contentId', \
+                                                      right_on='contentId') \
+                          .sort_values('eventStrength', ascending=False)[['eventStrength',\
+                                                                          'contentId',\
+                                                                          'title', 'url', 'lang']]
+
 # print(inspect_interactions(-1479311724257856983, test_set=False).head(20))
-# print(content_based_recommender_model.recommend_items(-1479311724257856983, topn=20, verbose=True))
-
+print("BASED on his/her previous browse and action history, his/her top 20 recommended articles are:")
+recs = content_based_recommender_model.recommend_items(-1479311724257856983, topn=50, verbose=True)
+recs = recs.title.unique()
+print(recs[0:20])
 
 
