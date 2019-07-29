@@ -116,6 +116,7 @@
       <find>f</find>
       <find>form-check</find>
       <find>home</find>
+      <find>login_manage</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
