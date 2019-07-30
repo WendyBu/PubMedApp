@@ -3,14 +3,12 @@
     <div><a class="nav-item nav-link" href="{{ url_for('login') }}">Login to read more!</a></div>
     {% for post in posts %}
         <article class="media content-section">
-
           <div class="media-body">
             <div class="article-metadata">
               <a class="text-muted">{{ post.journal }}     {{post.year}}</a>
             </div>
             <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
             <p class="article-content">{{ post.text|truncate(500)|safe }}</p>
-              <a class="mr-2" href="{{ post.url }}">{{ post.url }}</a>
           </div>
         </article>
     {% endfor %}

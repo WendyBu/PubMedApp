@@ -33,3 +33,21 @@ class Paper(db.Model):
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.year}')"
+
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.TEXT, nullable=False)
+    time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.BIGINT, db.ForeignKey('user.id'))
+    paper_id = db.Column(db.BIGINT, db.ForeignKey('paper.contentId'))
+
+
+    # def __repr__(self):
+    #     return f"Post('{self.contnet}', '{self.year}')"
+
+class Like(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    likes = db.Column(db.BLOB)
+    user_id = db.Column(db.BIGINT, db.ForeignKey('user.id'))
+    paper_id = db.Column(db.BIGINT, db.ForeignKey('paper.contentId'))

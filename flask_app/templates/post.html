@@ -1,20 +1,23 @@
 {% extends "layout.html" %}
 {% block content %}
   <article class="media content-section">
-    <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}">
+
     <div class="media-body">
       <div class="article-metadata">
-        <a class="mr-2" href="#">{{ post.author.username }}</a>
-        <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
-        {% if post.author == current_user %}
+        <a class="mr-2" href="#">{{ post.journal }}</a>
+        <small class="text-muted">{{ post.year }}</small>
+
           <div>
-            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('update_post', post_id=post.id) }}">Update</a>
-            <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
+            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('update_post', post_id=post.id) }}">Like</a>
+            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('comment', post_id=post.id) }}">Comment</a>
+            <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Dislike</button>
+
           </div>
-        {% endif %}
+
       </div>
-      <h2><a class="article-title" href="{{ url_for('post',post_id = post.id) }}">{{post.title}}</a></h2>
-      <p class="article-content">{{ post.content }}</p>
+      <h2 class="article-title">{{ post.title }}</h2>
+      <p class="article-content">{{ post.text }}</p>
+      <a class="mr-2" href="{{ post.url }}">Full text {{ post.url }}</a>
     </div>
   </article>
   <!-- Modal -->
@@ -37,3 +40,4 @@
     </div>
   </div>
 {% endblock content %}
+

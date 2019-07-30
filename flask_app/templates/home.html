@@ -6,10 +6,11 @@
             <div class="article-metadata">
               <a class="text-muted">{{ post.journal }}     {{post.year}}</a>
             </div>
-            <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
-            <p class="article-content">{{ post.text|truncate(500)|safe }}</p>
+            <h2><a class="article-title" href="{{ url_for('post', post_id=post.contentId) }}">{{ post.title }}</a></h2>
+              <p class="article-content">{{ post.text|truncate(300)|safe }}</p>
               <a class="mr-2" href="{{ post.url }}">{{ post.url }}</a>
           </div>
         </article>
     {% endfor %}
 {% endblock content %}
+
