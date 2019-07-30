@@ -8,13 +8,22 @@ from flask_app.models import User, Paper
 from flask_login import login_user, current_user, logout_user, login_required
 
 
-posts = []
 
 @app.route("/")
+@app.route("/index")
+def index():
+    posts = Paper.query.limit(2).all()
+    return render_template('index.html', posts=posts)
+
+
 @app.route("/home")
 def home():
-    posts = Paper.query.all()
-    return render_template('home.html', posts=posts)
+    if current_user.is_authenticated:
+        posts = Paper.query.filter_by(userID=current_user.id)
+        return render_template('home.html', posts=posts)
+    else:
+        flash('Please login in to your account to see the recommendations', 'error')
+        return redirect(url_for('index'))
 
 
 @app.route("/about")
@@ -90,7 +99,7 @@ def account():
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.email.data = current_user.email
-    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
+    image_file = url_for('static', filename='profile_pics/' + current_user.image)
     return render_template('account.html', title='Account',
                            image_file=image_file, form=form)
 #

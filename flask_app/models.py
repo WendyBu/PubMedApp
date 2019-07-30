@@ -28,6 +28,7 @@ class Paper(db.Model):
     year = db.Column(db.String)
     text = db.Column(db.Text, nullable=False)
     url = db.Column(db.Text, nullable=False)
+    journal = db.Column(db.Text)
     userID = db.Column(db.BIGINT, db.ForeignKey('user.id'))
 
     def __repr__(self):

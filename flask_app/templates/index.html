@@ -1,7 +1,9 @@
 {% extends "layout.html" %}
 {% block content %}
+    <div><a class="nav-item nav-link" href="{{ url_for('login') }}">Login to read more!</a></div>
     {% for post in posts %}
         <article class="media content-section">
+
           <div class="media-body">
             <div class="article-metadata">
               <a class="text-muted">{{ post.journal }}     {{post.year}}</a>
