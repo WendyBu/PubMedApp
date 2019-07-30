@@ -492,6 +492,7 @@ for p in ax.patches:
 
 
 ############ Testing ################################################
+
 print('-----------------------TESTING for one user ----------------------------')
 def inspect_interactions(person_id, test_set=True):
     if test_set:

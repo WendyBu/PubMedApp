@@ -1,0 +1,98 @@
+/Users/yiwenbu/.conda/envs/CE5/bin/python /Users/yiwenbu/GTClass/prototype/PubMedApp/recommender.py
+articlewID.csv columns: Index(['Unnamed: 0', 'index', 'oldIndex', 'journal', 'title', 'text', 'year',
+       'lang', 'type', 'region', 'PMID', 'url', 'key', 'contentId'],
+      dtype='object')
+users_interactions.csv columns: Index(['timestamp', 'eventType', 'contentId', 'personId', 'sessionId',
+       'userAgent', 'userRegion', 'userCountry'],
+      dtype='object')
+# users: 1895
+# users with at least 5 interactions: 1140
+# of interactions from users with at least 5 interactions: 69868
+# of unique user/item interactions: 39106
+# interactions on Train set: 31284
+# interactions on Test set: 7822
+---------------------------------------------
+Evaluating Popularity recommendation model...
+1139 users processed
+
+Global metrics:
+{'modelName': 'Popularity', 'recall@5': 0.2418818716440808, 'recall@10': 0.3725389925850166}
+(1, 3622)
+------------------------------------
+user -1479311724257856983 top interests
+---------------------------------------------------------------
+         token  relevance
+0        study   0.170556
+1     patients   0.146456
+2       health   0.123937
+3      disease   0.122730
+4         risk   0.122529
+5       asthma   0.108945
+6     outcomes   0.105901
+7     dementia   0.104858
+8        among   0.104630
+9       cancer   0.098566
+10         nan   0.096500
+11     factors   0.088924
+12       based   0.088596
+13       liver   0.088426
+14  associated   0.088105
+15         hiv   0.083667
+16   screening   0.081812
+17         use   0.080058
+18       years   0.078640
+19         may   0.077122
+----------------------------------------------------------------
+---------------------------------------------------------------
+Evaluating Content-Based Filtering model...
+1139 users processed
+
+Global metrics:
+{'modelName': 'Content-Based', 'recall@5': 0.49578113014574277, 'recall@10': 0.5806699053950396}
+----------------------------------------------------------------------
+Evaluating Collaborative Filtering (SVD Matrix Factorization) model...
+1139 users processed
+
+Global metrics:
+{'modelName': 'Collaborative Filtering', 'recall@5': 0.33392994119151115, 'recall@10': 0.46803886474047557}
+------------------------------------------------------------------------------
+Evaluating Hybrid model...
+1139 users processed
+
+Global metrics:
+{'modelName': 'Hybrid', 'recall@5': 0.48683201227307593, 'recall@10': 0.5565072871388391}
+----------------------------------------------------------------
+MODEL COMPARING RESULTS
+                         recall@10  recall@5
+modelName
+Popularity                0.372539  0.241882
+Collaborative Filtering   0.468039  0.333930
+Content-Based             0.580670  0.495781
+Hybrid                    0.556507  0.486832
+-----------------Conclusion---------------------------------------
+Content Based Model has the best performance for this dataset.
+------------------------------------------------------------------
+-----------------------TESTING for one user ----------------------------
+BASED on his/her previous browse and action history, his/her top 20 recommended articles are:
+['Factors affecting the occurrence of gastrointestinal bleeding in acute ischemic stroke patients.'
+ 'Increased Incidence of Lung Cancer Among Patients With Superficial Transitional Cell Carcinoma: A Potential Risk Cohort for Lung Cancer Screening.'
+ 'Postprandial Hypertriglyceridaemia Revisited in the Era of Non-Fasting Lipid Profile Testing: A 2019 Expert Panel Statement, Narrative Review'
+ 'The burden of critical limb ischemia: a review of recent literature.'
+ 'The Use of Mobile Phones in Rural Javanese Villages: Knowledge Production and Information Exchange Among Poor Women with Diabetes'
+ 'Nonalcoholic Fatty Liver Disease: The Overlooked Complication of Type 2 Diabetes'
+ 'Vitamin D supplementation after malnutrition associated with time-related increase of cancer diagnoses: A cohort study of 389 patients with Wernicke-Korsakoff syndrome.'
+ '[SENTIERI: Epidemiological Study of Residents in National Priority Contaminated Sites. Fifth Report].'
+ 'Global impact of diet and temperature over aquaculture of Octopus vulgaris paralarvae from a transcriptomic approach.'
+ 'Roles of OGG1 in transcriptional regulation and maintenance of metabolic homeostasis.'
+ 'Sociomarkers and biomarkers: predictive modeling in identifying pediatric asthma patients at risk of hospital revisits.'
+ 'A longitudinal study on latent TB infection screening and its association with TB incidence in HIV patients.'
+ 'Understanding the genetics of asthma and implications for clinical practice.'
+ 'Anti-inflammatory effects of flavonoids.'
+ 'Bariatric surgery: a potential cure for asthma?'
+ 'Long-term changes in nutritional status are associated with functional and mortality outcomes among community-living older adults.'
+ 'A review of the incidence and determinants of catastrophic health expenditure in Nigeria: Implications for universal health coverage.'
+ 'Risk Attitudes Affect Livestock Biosecurity Decisions With Ramifications for Disease Control in a Simulated Production System.'
+ 'Non-Alcoholic steatohepatitis is associated with liver-related outcomes and all-cause mortality in chronic hepatitis B.'
+ 'Down syndrome, Alzheimer disease and cerebral amyloid angiopathy: the complex triangle of brain amyloidosis.']
+
+Process finished with exit code 0
