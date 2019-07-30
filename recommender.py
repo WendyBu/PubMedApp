@@ -16,12 +16,12 @@ pd.options.display.max_columns = 30
 
 
 ################## 1.  import data to dataset#########################################
-articles_df = pd.read_csv('data/articlewID.csv', sep="\t")
+articles_df = pd.read_csv('/Users/yiwenbu/GTClass/prototype/PubMedApp/data/articlewID.csv', sep="\t")
 # print(articles_df.head(5))
 # print(articles_df.shape)    # 3047 X 14
 print("articlewID.csv columns:", articles_df.columns)
 
-interactions_df = pd.read_csv('data/users_interactions.csv')
+interactions_df = pd.read_csv('/Users/yiwenbu/GTClass/prototype/PubMedApp/data/users_interactions.csv')
 # print(interactions_df.head(10))
 print("users_interactions.csv columns:", interactions_df.columns)
 
@@ -492,7 +492,6 @@ for p in ax.patches:
 
 
 ############ Testing ################################################
-
 print('-----------------------TESTING for one user ----------------------------')
 def inspect_interactions(person_id, test_set=True):
     if test_set:
@@ -504,12 +503,14 @@ def inspect_interactions(person_id, test_set=True):
                                                       right_on='contentId') \
                           .sort_values('eventStrength', ascending=False)[['eventStrength',\
                                                                           'contentId',\
-                                                                          'title', 'url', 'lang']]
+                                                                          'title', 'url', 'year', 'journal', 'text']]
 
-# print(inspect_interactions(-1479311724257856983, test_set=False).head(20))
-print("BASED on his/her previous browse and action history, his/her top 20 recommended articles are:")
-recs = content_based_recommender_model.recommend_items(-1479311724257856983, topn=50, verbose=True)
-recs = recs.title.unique()
-print(recs[0:20])
+
+if __name__ == "__main__":
+    print(inspect_interactions(-1479311724257856983, test_set=False).head(20))
+    print("BASED on his/her previous browse and action history, his/her top 20 recommended articles are:")
+    recs = content_based_recommender_model.recommend_items(-1479311724257856983, topn=50, verbose=True)
+    recs = recs.title.unique()
+    print(recs[0:20])
 
 
