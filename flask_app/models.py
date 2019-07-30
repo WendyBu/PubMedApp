@@ -4,28 +4,31 @@ from flask_login import UserMixin
 
 
 @login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+def load_user(id):
+    return User.query.get(int(id))
 
 
 class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
+    index = db.Column(db.Integer)
+    id = db.Column(db.BIGINT, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    image_file = db.Column(db.String(20), nullable=False, default='profile1.png')
+    image = db.Column(db.String(20), nullable=False, default='profile1.png')
     password = db.Column(db.String(60), nullable=False)
-    posts = db.relationship('Post', backref='author', lazy=True)
+    papers = db.relationship('Paper', backref='user', lazy=True)
 
     def __repr__(self):
-        return f"User('{self.username}', '{self.email}', '{self.image_file}')"
+        return f"User('{self.username}', '{self.email}', '{self.image}')"
 
 
-class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+class Paper(db.Model):
+    index = db.Column(db.Integer, primary_key=True)
+    contentId = db.Column(db.BIGINT, nullable=False)
     title = db.Column(db.String(100), nullable=False)
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    year = db.Column(db.String)
+    text = db.Column(db.Text, nullable=False)
+    url = db.Column(db.Text, nullable=False)
+    userID = db.Column(db.BIGINT, db.ForeignKey('user.id'))
 
     def __repr__(self):
-        return f"Post('{self.title}', '{self.date_posted}')"
+        return f"Post('{self.title}', '{self.year}')"
